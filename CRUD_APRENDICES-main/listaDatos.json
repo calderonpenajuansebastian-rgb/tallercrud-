@@ -14,5 +14,13 @@
     "edad": "15",
     "correo": "pp@sena.edu.co",
     "avatar": "/misImagenes/1787865166031.png"
+  },
+  {
+    "dni": 3,
+    "nombre": "Daniel",
+    "apellido": "gomez",
+    "edad": 25,
+    "correo": "Dais@example.com",
+    "avatar": "sin imagen"
   }
 ]
