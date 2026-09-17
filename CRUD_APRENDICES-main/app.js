@@ -5,13 +5,14 @@ const path = require('path');
 require('dotenv/config');
 
 const app = express();
-const PORT = process.env.PORT || 3000;
-const registroMiddleware = require('./registroMiddleware');
-const { validarCampos } = require('./validacion/validar');
-const manejadorErrores = require('./manejadorErrores');
+const PORT = process.env.PORT || 3333;
+const registroMiddleware = require('./src/middleware/registroMiddleware');
+const { validarCampos } = require('./src/utelleria/validar');
+const manejadorErrores = require('./src/middleware/manejadorErrores');
+const apiRouter = require('./src/routes/indesx');
 
-const directorioImagenes = path.join(__dirname, 'misImagenes');
-const rutaArchivoJson = path.join(__dirname, 'lista_datos.json');
+const directorioImagenes = path.join(__dirname, 'src', 'middleware', 'misImagenes');
+const rutaArchivoJson = path.join(__dirname, 'listaDatos.json');
 
 const usuarioValido = {
   usuario: 'dilan',
@@ -24,8 +25,8 @@ if (!fs.existsSync(directorioImagenes)) {
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
 app.use(registroMiddleware);
+app.use('/api', apiRouter);
 
 const almacenamiento = multer.diskStorage({
   destination: (req, file, cb) => cb(null, directorioImagenes),
@@ -87,9 +88,9 @@ app.post('/rutaprotegida', (req, res) => {
 app.get('/aprendices', (req, res) => {
   try {
     const listaAprendices = leerAprendices();
-    res.json(listaAprendices);
+    return res.json(listaAprendices);
   } catch (error) {
-    res.status(500).json({ error: 'Error al leer los aprendices' });
+    return res.status(500).json({ error: 'Error al leer los aprendices' });
   }
 });
 
@@ -179,3 +180,5 @@ app.use(manejadorErrores);
 app.listen(PORT, () => {
   console.log(`Servidor funcionando en http://localhost:${PORT}`);
 });
+
+module.exports = app;
