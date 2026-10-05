@@ -1,0 +1,17 @@
+[
+  {
+    "nombre": "Administrador"
+  },
+  {
+    "nombre": "Instructor"
+  },
+  {
+    "nombre": "Aprendiz"
+  },
+  {
+    "nombre": "Coordinador"
+  },
+  {
+    "nombre": "Superadmin"
+  }
+]
