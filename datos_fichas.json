@@ -1,0 +1,27 @@
+[
+  {
+    "numero": "3407184",
+    "jornada": "Diurna",
+    "modalidad": "Presencial"
+  },
+  {
+    "numero": "3407185",
+    "jornada": "Nocturna",
+    "modalidad": "Presencial"
+  },
+  {
+    "numero": "3407186",
+    "jornada": "Diurna",
+    "modalidad": "Virtual"
+  },
+  {
+    "numero": "3407187",
+    "jornada": "Nocturna",
+    "modalidad": "Virtual"
+  },
+  {
+    "numero": "3407188",
+    "jornada": "Diurna",
+    "modalidad": "Presencial"
+  }
+]
