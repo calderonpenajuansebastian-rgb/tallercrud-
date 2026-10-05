@@ -1,0 +1,140 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Rol {
+  id        Int       @id @default(autoincrement())
+  nombre    String    @unique
+  usuarios  Usuario[]
+  createdAt DateTime  @default(now())
+}
+
+model Usuario {
+  id        Int       @id @default(autoincrement())
+  usuario   String
+  name      String    @unique
+  createdAt DateTime  @default(now())
+
+  rolId     Int?
+  rol       Rol?      @relation(fields: [rolId], references: [id])
+
+  aprendiz  Aprendiz?
+  instructor Instructor?
+}
+
+model Programa {
+  id         Int        @id @default(autoincrement())
+  nombre     String
+  codigo     String     @unique
+  nivel      String
+  aprendices Aprendiz[]
+  fichas     Ficha[]
+  createdAt  DateTime   @default(now())
+}
+
+model Ficha {
+  id         Int        @id @default(autoincrement())
+  numero     String     @unique
+  jornada    String
+  modalidad  String
+  programaId Int
+  programa   Programa   @relation(fields: [programaId], references: [id])
+  aprendices Aprendiz[]
+  createdAt  DateTime   @default(now())
+}
+
+model Aprendiz {
+  id             Int             @id @default(autoincrement())
+  documento      String          @unique
+  nombre         String
+  apellido       String
+  correo         String          @unique
+  telefono       String?
+  programaId     Int
+  fichaId        Int
+  usuarioId      Int?            @unique
+
+  programa       Programa        @relation(fields: [programaId], references: [id])
+  ficha          Ficha           @relation(fields: [fichaId], references: [id])
+  usuario        Usuario?        @relation(fields: [usuarioId], references: [id])
+
+  asistencias    Asistencia[]
+  calificaciones Calificacion[]
+  practica       Practica?
+
+  createdAt      DateTime        @default(now())
+}
+
+model Instructor {
+  id             Int            @id @default(autoincrement())
+  documento      String         @unique
+  nombre         String
+  apellido       String
+  correo         String         @unique
+  especialidad   String
+  usuarioId      Int?           @unique
+
+  usuario        Usuario?       @relation(fields: [usuarioId], references: [id])
+  calificaciones Calificacion[]
+
+  createdAt      DateTime       @default(now())
+}
+
+model Empresa {
+  id         Int        @id @default(autoincrement())
+  nit        String     @unique
+  nombre     String
+  direccion  String
+  telefono   String
+  correo     String     @unique
+  practicas  Practica[]
+  createdAt  DateTime   @default(now())
+}
+
+model Practica {
+  id          Int       @id @default(autoincrement())
+  fechaInicio DateTime
+  fechaFin    DateTime?
+  estado      String
+  cargo       String
+
+  aprendizId  Int       @unique
+  empresaId   Int
+
+  aprendiz    Aprendiz  @relation(fields: [aprendizId], references: [id])
+  empresa     Empresa   @relation(fields: [empresaId], references: [id])
+
+  createdAt   DateTime  @default(now())
+}
+
+model Asistencia {
+  id          Int       @id @default(autoincrement())
+  fecha       DateTime
+  estado      String
+  observacion String?
+
+  aprendizId  Int
+  aprendiz    Aprendiz  @relation(fields: [aprendizId], references: [id])
+
+  createdAt   DateTime  @default(now())
+}
+
+model Calificacion {
+  id           Int        @id @default(autoincrement())
+  nota         Float
+  competencia  String
+  periodo      String
+
+  aprendizId   Int
+  instructorId Int
+
+  aprendiz     Aprendiz   @relation(fields: [aprendizId], references: [id])
+  instructor   Instructor @relation(fields: [instructorId], references: [id])
+
+  createdAt    DateTime   @default(now())
+}

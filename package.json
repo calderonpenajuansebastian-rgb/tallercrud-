@@ -1,0 +1,31 @@
+{
+  "name": "Juan-calderon-intro-express",
+  "version": "1.0.0",
+  "description": "Introducción a Express.js",
+  "main": "app.js",
+  "scripts": {
+    "start": "node --watch app.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.2",
+    "express": "^5.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "multer": "^2.4.0"
+  },
+  "keywords": [
+    "express",
+    "node",
+    "api"
+  ],
+  "author": "Juan Calderon",
+  "license": "ISC",
+  "type": "commonjs",
+  "devDependencies": {
+    "@prisma/adapter-pg": "^7.10.0",
+    "@prisma/client": "^7.10.0",
+    "prisma": "^7.10.0",
+    "tsx": "^4.23.15"
+  }
+}
