@@ -1,0 +1,27 @@
+[
+  {
+    "nombre": "Análisis y Desarrollo de Software",
+    "codigo": "ADSO",
+    "nivel": "Tecnólogo"
+  },
+  {
+    "nombre": "Sistemas",
+    "codigo": "SIST",
+    "nivel": "Técnico"
+  },
+  {
+    "nombre": "Programación de Software",
+    "codigo": "PROG",
+    "nivel": "Técnico"
+  },
+  {
+    "nombre": "Gestión de Redes de Datos",
+    "codigo": "REDES",
+    "nivel": "Tecnólogo"
+  },
+  {
+    "nombre": "Diseño de Sistemas",
+    "codigo": "DISIS",
+    "nivel": "Tecnólogo"
+  }
+]
