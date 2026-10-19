@@ -1,6 +1,7 @@
 require("dotenv").config();
 const express = require("express");
 const enrutador = require("./routes/indesx");
+const manejadorErrores = require("./middleware/manejadorErrores");
 
 const app = express();
 
@@ -14,5 +15,7 @@ app.use("/api", enrutador);
 app.get("/", (req, res) => {
   res.send("Api rest");
 });
+
+app.use(manejadorErrores);
 
 module.exports = app;

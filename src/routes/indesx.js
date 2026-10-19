@@ -1,18 +1,17 @@
-//
-const {Router} = require("express")
-//imporatae enrutador de la entidad
-const pruebaRouter = require("./pruebaRouter")
-//
-const autenticarRouter = require("./AutenticarRoutes")
+const { Router } = require("express");
 
-const { listarUsuarios } = require("../controllers/usuarioController")      
+const pruebaRouter = require("./pruebaRouter");
+const autenticarRouter = require("./autenticarRoutes");
+const entidadesRouter = require("./entidades");
+const { listarUsuarios } = require("../controllers/usuarisoscontroller");
 
-const enrutador = Router()
+const enrutador = Router();
 
+// Rutas que sirven TODA la base de datos (roles, usuarios, aprendices, etc.)
+enrutador.use("/", entidadesRouter);
 
-//usar enrutador
-enrutador.use("/rutaprueba" , pruebaRouter)
-enrutador.use("/autenticar" , autenticarRouter)
-enrutador.get("/listado" , listarUsuarios)
+enrutador.use("/rutaprueba", pruebaRouter);
+enrutador.use("/autenticar", autenticarRouter);
+enrutador.get("/listado", listarUsuarios);
 
-module.exports= enrutador
+module.exports = enrutador;

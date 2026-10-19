@@ -4,7 +4,10 @@
   "description": "Introducción a Express.js",
   "main": "app.js",
   "scripts": {
-    "start": "node --watch app.js"
+    "start": "node --watch app.js",
+    "start:api": "node --watch src/server.js",
+    "db:deploy": "prisma migrate deploy",
+    "db:generate": "prisma generate"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",
@@ -27,5 +30,10 @@
     "@prisma/client": "^7.10.0",
     "prisma": "^7.10.0",
     "tsx": "^4.23.15"
+  },
+  "allowScripts": {
+    "@prisma/engines@7.10.0": true,
+    "esbuild@0.28.2": true,
+    "prisma@7.10.0": true
   }
 }

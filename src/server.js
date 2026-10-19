@@ -1,4 +1,4 @@
-const app = require('./src/app');
+const app = require('./app');
 
 const PUERTO = process.env.PUERTO || 3333;
 

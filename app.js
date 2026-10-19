@@ -10,6 +10,7 @@ const registroMiddleware = require('./src/middleware/registroMiddleware');
 const { validarCampos } = require('./src/utelleria/validar');
 const manejadorErrores = require('./src/middleware/manejadorErrores');
 const apiRouter = require('./src/routes/indesx');
+const prisma = require('./src/config/db');
 
 const directorioImagenes = path.join(__dirname, 'src', 'middleware', 'misImagenes');
 const rutaArchivoJson = path.join(__dirname, 'listaDatos.json');
@@ -38,13 +39,27 @@ const almacenamiento = multer.diskStorage({
 
 const cargar = multer({ storage: almacenamiento });
 
-const leerAprendices = () => {
-  const datos = fs.readFileSync(rutaArchivoJson, 'utf-8');
-  return JSON.parse(datos);
-};
+const asegurarRelaciones = async (body) => {
+  let programaId = body.programaId ? Number(body.programaId) : null;
+  let fichaId = body.fichaId ? Number(body.fichaId) : null;
 
-const guardarAprendices = (lista) => {
-  fs.writeFileSync(rutaArchivoJson, JSON.stringify(lista, null, 2));
+  if (!programaId) {
+    const prog = await prisma.programa.upsert({
+      where: { codigo: "DEFAULT" },
+      update: {},
+      create: { codigo: "DEFAULT", nombre: "Programa general", nivel: "Técnico" },
+    });
+    programaId = prog.id;
+  }
+  if (!fichaId) {
+    const fich = await prisma.ficha.upsert({
+      where: { numero: "0" },
+      update: {},
+      create: { numero: "0", jornada: "Diurna", modalidad: "Presencial", programaId },
+    });
+    fichaId = fich.id;
+  }
+  return { programaId, fichaId };
 };
 
 app.get('/', (req, res) => {
@@ -85,93 +100,87 @@ app.post('/rutaprotegida', (req, res) => {
   return res.status(401).json({ error: 'usuario y/o clave incorrectos' });
 });
 
-app.get('/aprendices', (req, res) => {
+app.get('/aprendices', async (req, res, next) => {
   try {
-    const listaAprendices = leerAprendices();
-    return res.json(listaAprendices);
+    const aprendices = await prisma.aprendiz.findMany({
+      include: { programa: true, ficha: true, usuario: true },
+    });
+    return res.json(aprendices);
   } catch (error) {
-    return res.status(500).json({ error: 'Error al leer los aprendices' });
+    return next(error);
   }
 });
 
-app.get('/aprendices/:dni', (req, res) => {
-  const dniBusqueda = String(req.params.dni);
-
+app.get('/aprendices/:dni', async (req, res, next) => {
   try {
-    const listaAprendices = leerAprendices();
-    const aprendizEncontrado = listaAprendices.find((aprendiz) => String(aprendiz.dni) === dniBusqueda);
+    const aprendiz = await prisma.aprendiz.findUnique({
+      where: { documento: String(req.params.dni) },
+      include: { programa: true, ficha: true, usuario: true },
+    });
 
-    if (!aprendizEncontrado) {
+    if (!aprendiz) {
       return res.status(404).json({ error: 'Aprendiz no encontrado' });
     }
 
-    return res.json(aprendizEncontrado);
+    return res.json(aprendiz);
   } catch (error) {
-    return res.status(500).json({ error: 'Error al procesar los datos' });
+    return next(error);
   }
 });
 
-app.post('/aprendices', cargar.single('imagen'), validarCampos, (req, res) => {
+app.post('/aprendices', cargar.single('imagen'), validarCampos, async (req, res, next) => {
   try {
-    const datosAprendiz = req.body;
-    const listaAprendices = leerAprendices();
-    const ultimoDni = listaAprendices.reduce((max, aprendiz) => Math.max(max, Number(aprendiz.dni) || 0), 0);
+    const datos = req.body;
+    const { programaId, fichaId } = await asegurarRelaciones(datos);
 
-    const nuevoAprendiz = {
-      dni: ultimoDni + 1,
-      ...datosAprendiz,
-      avatar: req.file ? `/misImagenes/${req.file.filename}` : 'sin imagen'
-    };
+    const aprendiz = await prisma.aprendiz.create({
+      data: {
+        documento: String(datos.documento || datos.dni || Date.now()),
+        nombre: datos.nombre,
+        apellido: datos.apellido || "",
+        correo: datos.correo,
+        telefono: datos.telefono || null,
+        programaId,
+        fichaId,
+        usuarioId: datos.usuarioId ? Number(datos.usuarioId) : null,
+      },
+      include: { programa: true, ficha: true },
+    });
 
-    listaAprendices.push(nuevoAprendiz);
-    guardarAprendices(listaAprendices);
-
-    return res.status(201).json(nuevoAprendiz);
+    return res.status(201).json(aprendiz);
   } catch (error) {
-    return res.status(500).json({ error: 'No se pudo registrar el aprendiz.' });
+    return next(error);
   }
 });
 
-app.put('/aprendices/:dni', validarCampos, (req, res) => {
-  const dniBusqueda = String(req.params.dni);
-
+app.put('/aprendices/:dni', async (req, res, next) => {
   try {
-    let listaAprendices = leerAprendices();
-    const indice = listaAprendices.findIndex((aprendiz) => String(aprendiz.dni) === dniBusqueda);
+    const datos = { ...req.body };
+    const data = {};
+    if (datos.nombre !== undefined) data.nombre = datos.nombre;
+    if (datos.apellido !== undefined) data.apellido = datos.apellido;
+    if (datos.correo !== undefined) data.correo = datos.correo;
+    if (datos.telefono !== undefined) data.telefono = datos.telefono;
+    if (datos.documento !== undefined) data.documento = String(datos.documento);
 
-    if (indice === -1) {
-      return res.status(404).json({ error: 'Aprendiz no encontrado' });
-    }
+    const aprendiz = await prisma.aprendiz.update({
+      where: { documento: String(req.params.dni) },
+      data,
+      include: { programa: true, ficha: true },
+    });
 
-    listaAprendices[indice] = {
-      ...listaAprendices[indice],
-      ...req.body
-    };
-
-    guardarAprendices(listaAprendices);
-    return res.json({ mensaje: 'Aprendiz modificado con éxito', aprendiz: listaAprendices[indice] });
+    return res.json({ mensaje: 'Aprendiz modificado con éxito', aprendiz });
   } catch (error) {
-    return res.status(500).json({ error: 'No se pudo actualizar el aprendiz.' });
+    return next(error);
   }
 });
 
-app.delete('/aprendices/:dni', (req, res) => {
-  const dniBusqueda = String(req.params.dni);
-
+app.delete('/aprendices/:dni', async (req, res, next) => {
   try {
-    let listaAprendices = leerAprendices();
-    const existe = listaAprendices.some((aprendiz) => String(aprendiz.dni) === dniBusqueda);
-
-    if (!existe) {
-      return res.status(404).json({ error: 'Aprendiz no encontrado' });
-    }
-
-    listaAprendices = listaAprendices.filter((aprendiz) => String(aprendiz.dni) !== dniBusqueda);
-    guardarAprendices(listaAprendices);
-
+    await prisma.aprendiz.delete({ where: { documento: String(req.params.dni) } });
     return res.json({ mensaje: 'Aprendiz eliminado con éxito' });
   } catch (error) {
-    return res.status(500).json({ error: 'Error al eliminar el aprendiz' });
+    return next(error);
   }
 });
 
